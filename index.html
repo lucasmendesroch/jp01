@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JP01 — Jurassic Park Vehicle Registry</title>
+  <meta name="description" content="JP01: replica fiel do Jeep Wrangler TJ 1997 do Jurassic Park, construida por Lucas Mendes em Belo Horizonte para o filho Matheus.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;400;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════ */
+    /*  DESIGN TOKENS — JURASSIC PARK PALETTE     */
+    /* ═══════════════════════════════════════════ */
+    :root {
+      --jp-amber: #E8A020;
+      --jp-amber-dark: #C47A10;
+      --jp-amber-glow: rgba(232,160,32,0.35);
+      --jp-amber-dim: rgba(232,160,32,0.12);
+      --jp-red: #CC2200;
+      --jp-red-glow: rgba(204,34,0,0.4);
+      --jp-green: #4ADE80;
+      --jp-green-dim: rgba(74,222,128,0.15);
+      --jp-black: #080808;
+      --jp-dark: #0F0F0B;
+      --jp-dark-mid: #161612;
+      --jp-dark-panel: #1A1A14;
+      --jp-text: #C8B878;
+      --jp-text-bright: #E8D8A0;
+      --jp-text-dim: rgba(200,184,120,0.4);
+      --jp-stripe-yellow: #F5C842;
+      --jp-stripe-black: #111111;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--jp-amber) var(--jp-black);
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--jp-dark);
+      color: var(--jp-text);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* SCANLINES */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+    }
+
+    /* FILM GRAIN OVERLAY */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      mix-blend-mode: overlay;
+    }
+
+    /* DNA MATRIX CANVAS */
+    #dna-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    section, footer, nav { position: relative; z-index: 2; }
+
+    /* ═══════════════════════════════════════════ */
+    /*  UTILITY COMPONENTS                        */
+    /* ═══════════════════════════════════════════ */
+
+    .jp-warning {
+      display: inline-flex;
+      border: 1px solid var(--jp-amber);
+      padding: .4rem 1rem;
+      background: var(--jp-amber-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 3px;
+      color: var(--jp-amber);
+      text-transform: uppercase;
+    }
+
+    .danger-stripe {
+      height: 6px;
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--jp-stripe-yellow),
+        var(--jp-stripe-yellow) 10px,
+        var(--jp-stripe-black) 10px,
+        var(--jp-stripe-black) 20px
+      );
+      opacity: .6;
+    }
+
+    .t-amber { color: var(--jp-amber); }
+    .t-green { color: var(--jp-green); }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* BUTTON */
+    .btn-jp {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .85rem 2.2rem;
+      border: 1px solid var(--jp-amber);
+      background: transparent;
+      color: var(--jp-amber);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .3s, color .3s;
+    }
+    .btn-jp:hover {
+      background: var(--jp-amber);
+      color: var(--jp-black);
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  NAV                                       */
+    /* ═══════════════════════════════════════════ */
+    .jp-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1rem 3rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      transition: background .3s, backdrop-filter .3s;
+    }
+    .jp-nav.scrolled {
+      background: rgba(8,8,8,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(232,160,32,.2);
+    }
+
+    .nav-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+      margin-right: auto;
+    }
+    .nav-jp { color: var(--jp-text-bright); }
+    .nav-num { color: var(--jp-amber); }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 2px;
+      color: var(--jp-text-dim);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--jp-green);
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,.6); }
+      50% { box-shadow: 0 0 0 8px rgba(74,222,128,0); }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-link {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .8rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--jp-text-dim);
+      text-decoration: none;
+      transition: color .3s;
+    }
+    .nav-link:hover { color: var(--jp-amber); }
+    .nav-cta {
+      border: 1px solid var(--jp-amber);
+      padding: .4rem 1rem;
+      color: var(--jp-amber);
+    }
+    .nav-cta:hover {
+      background: var(--jp-amber);
+      color: var(--jp-black);
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  HERO                                      */
+    /* ═══════════════════════════════════════════ */
+    .hero {
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+    }
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(.45) saturate(.7);
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(8,8,8,.3) 0%, transparent 30%, transparent 60%, rgba(8,8,8,.85) 100%),
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(204,34,0,.05) 0%, transparent 100%);
+    }
+
+    /* Animated scanline */
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--jp-amber-glow), transparent);
+      animation: scanline 10s ease-in-out infinite;
+      z-index: 3;
+    }
+    @keyframes scanline {
+      0%,100% { top: 10%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      50% { top: 90%; }
+    }
+
+    /* TERMINAL BOOT */
+    .terminal-boot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 10;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .8rem;
+      color: var(--jp-green);
+      letter-spacing: 1px;
+      line-height: 2.2;
+      text-shadow: 0 0 10px var(--jp-green);
+      transition: opacity .5s;
+      text-align: left;
+      min-width: 360px;
+    }
+    .terminal-boot.fade-out { opacity: 0; }
+
+    .t-line { opacity: 0; transition: opacity .3s; }
+    .t-line.visible { opacity: 1; }
+
+    .t-cursor {
+      animation: blink 1s step-end infinite;
+      color: var(--jp-green);
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* HERO CONTENT */
+    .hero-content {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      padding: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+    .hero-content.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-eyebrow {
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(8rem, 25vw, 20rem);
+      line-height: 0.8;
+      letter-spacing: -0.02em;
+      background: linear-gradient(180deg, var(--jp-text-bright) 0%, var(--jp-text) 50%, var(--jp-amber) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 60px var(--jp-amber-glow)) drop-shadow(0 4px 30px rgba(0,0,0,0.9));
+      position: relative;
+    }
+    .hero-number::before {
+      content: 'JP01';
+      position: absolute;
+      inset: 0;
+      -webkit-text-fill-color: transparent;
+      background: none;
+      -webkit-text-stroke: 1px rgba(232,160,32,0.08);
+      transform: translate(4px,4px);
+      z-index: -1;
+    }
+
+    /* Glitch */
+    @keyframes glitch {
+      0%,100% { text-shadow: none; transform: none; }
+      20% { text-shadow: -3px 0 var(--jp-red), 3px 0 var(--jp-green); transform: skewX(-2deg); }
+      40% { text-shadow: 3px 0 var(--jp-red), -3px 0 var(--jp-green); transform: skewX(2deg); }
+      60% { text-shadow: -1px 0 var(--jp-red); transform: skewX(-1deg); }
+      80% { text-shadow: none; transform: skewX(.5deg); }
+    }
+    .hero-number.glitch-active { animation: glitch .3s steps(1) forwards; }
+
+    .hero-tagline {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 200;
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      color: var(--jp-text);
+      opacity: .7;
+      margin-top: 1rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+    }
+
+    .hero-meta {
+      margin-top: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: 3px;
+      color: var(--jp-text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .hero-sep { color: var(--jp-amber); opacity: .4; }
+
+    .hero-footer {
+      position: absolute;
+      bottom: 4rem;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 3rem;
+      z-index: 5;
+    }
+
+    .hero-coord,
+    .hero-classify {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: 3px;
+      color: var(--jp-text-dim);
+      opacity: .4;
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .8rem;
+    }
+    .scroll-indicator span {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .5rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      opacity: .3;
+      color: var(--jp-text);
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--jp-amber), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%,100% { transform: scaleY(1); opacity: .5; }
+      50% { transform: scaleY(.5); opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  SECTION COMMONS                           */
+    /* ═══════════════════════════════════════════ */
+    .section-eyebrow {
+      margin-bottom: 1.2rem;
+    }
+
+    .section-number {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 6px;
+      color: var(--jp-amber);
+      opacity: .6;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--jp-text-bright);
+      text-transform: uppercase;
+    }
+    .section-title span { color: var(--jp-amber); }
+
+    /* ═══════════════════════════════════════════ */
+    /*  STORY / LEGADO                            */
+    /* ═══════════════════════════════════════════ */
+    .story-section {
+      padding: 10vh 0;
+      position: relative;
+    }
+
+    .story-header {
+      padding: 0 8vw;
+      margin-bottom: 4rem;
+    }
+
+    .story-quote {
+      padding: 4rem 8vw;
+      position: relative;
+      text-align: center;
+    }
+    .story-quote::before {
+      content: '"';
+      position: absolute;
+      font-family: 'Oswald', sans-serif;
+      font-size: 20rem;
+      color: var(--jp-amber);
+      opacity: .04;
+      top: -2rem;
+      left: 5%;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .story-quote-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.2rem, 3vw, 2.2rem);
+      font-weight: 200;
+      line-height: 1.6;
+      color: var(--jp-text-bright);
+      font-style: italic;
+      max-width: 700px;
+      margin: 0 auto;
+      letter-spacing: 1px;
+    }
+    .story-quote-text em { color: var(--jp-amber); font-style: normal; }
+    .story-quote-author {
+      margin-top: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 4px;
+      opacity: .3;
+    }
+
+    .story-scroll {
+      display: flex;
+      gap: 2px;
+      padding: 0 8vw;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .story-scroll::-webkit-scrollbar { display: none; }
+
+    .story-card {
+      flex: 0 0 min(380px, 80vw);
+      scroll-snap-align: start;
+      border: 1px solid rgba(232,160,32,.08);
+      padding: 2.5rem;
+      position: relative;
+      background: var(--jp-dark-mid);
+      transition: border-color .4s;
+    }
+    .story-card:hover { border-color: rgba(232,160,32,.3); }
+    .story-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: var(--jp-amber);
+    }
+
+    .card-status {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .5rem;
+      letter-spacing: 3px;
+      color: var(--jp-amber);
+      opacity: .6;
+      border: 1px solid rgba(232,160,32,.2);
+      padding: .2rem .6rem;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    .card-year {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      color: var(--jp-amber);
+      opacity: .18;
+      line-height: 1;
+      margin-bottom: .5rem;
+    }
+
+    .card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--jp-text-bright);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .card-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .9rem;
+      line-height: 1.8;
+      opacity: .55;
+      font-weight: 300;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  SPECS / DOSSIER                           */
+    /* ═══════════════════════════════════════════ */
+    .specs-section {
+      padding: 10vh 8vw;
+      position: relative;
+    }
+
+    .dossier-file {
+      margin-top: 4rem;
+      border: 1px solid rgba(232,160,32,.2);
+      background: var(--jp-dark-panel);
+    }
+
+    .dossier-header {
+      background: var(--jp-amber);
+      padding: .8rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: 2px;
+      color: var(--jp-black);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .dossier-body {
+      padding: .5rem 0;
+    }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1rem;
+      padding: .9rem 1.5rem;
+      border-bottom: 1px solid rgba(232,160,32,.05);
+      transition: background .2s;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-row:hover { background: var(--jp-amber-dim); }
+
+    .spec-field {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 2px;
+      color: var(--jp-amber);
+      opacity: .6;
+      text-transform: uppercase;
+      align-self: center;
+    }
+
+    .spec-value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--jp-text-bright);
+      align-self: center;
+    }
+
+    .dossier-footer {
+      padding: .8rem 1.5rem;
+      border-top: 1px solid rgba(232,160,32,.15);
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 2px;
+      color: var(--jp-text-dim);
+      text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  GALLERY                                   */
+    /* ═══════════════════════════════════════════ */
+    .gallery-section {
+      padding: 10vh 0;
+    }
+
+    .gallery-header {
+      padding: 0 8vw;
+      margin-bottom: 4rem;
+    }
+
+    .gallery-mosaic {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 15vh;
+      gap: 3px;
+      padding: 0 3px;
+    }
+
+    .gallery-frame {
+      position: relative;
+      overflow: hidden;
+      background: var(--jp-dark-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(232,160,32,.03);
+      transition: all .6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .gallery-frame:hover {
+      border-color: var(--jp-amber);
+      z-index: 2;
+      transform: scale(1.02);
+    }
+
+    .gallery-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .6s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: grayscale(.2);
+    }
+    .gallery-frame:hover img {
+      transform: scale(1.05);
+      filter: grayscale(0);
+    }
+
+    .frame-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: .8rem;
+      background: linear-gradient(to top, rgba(8,8,8,.6) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .gallery-frame:hover .frame-overlay { opacity: 1; }
+
+    .frame-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: 2px;
+      color: var(--jp-amber);
+      border: 1px solid rgba(232,160,32,.4);
+      padding: .2rem .5rem;
+      background: rgba(8,8,8,.6);
+    }
+
+    .frame-placeholder {
+      text-align: center;
+      padding: 1rem;
+    }
+    .frame-jp-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      color: var(--jp-amber);
+      opacity: .12;
+      line-height: 1;
+      display: block;
+    }
+    .frame-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .5rem;
+      letter-spacing: 3px;
+      opacity: .2;
+      color: var(--jp-text);
+      display: block;
+      margin-top: .3rem;
+    }
+
+    .gallery-frame.g1 { grid-column: 1 / 8; grid-row: 1 / 4; }
+    .gallery-frame.g2 { grid-column: 8 / 13; grid-row: 1 / 3; }
+    .gallery-frame.g3 { grid-column: 8 / 10; grid-row: 3 / 4; }
+    .gallery-frame.g4 { grid-column: 10 / 13; grid-row: 3 / 5; }
+    .gallery-frame.g5 { grid-column: 1 / 5; grid-row: 4 / 6; }
+    .gallery-frame.g6 { grid-column: 5 / 10; grid-row: 4 / 6; }
+
+    /* ═══════════════════════════════════════════ */
+    /*  EVENTS                                    */
+    /* ═══════════════════════════════════════════ */
+    .events-section {
+      padding: 10vh 8vw;
+    }
+
+    .events-list {
+      margin-top: 4rem;
+    }
+
+    .event-item {
+      display: grid;
+      grid-template-columns: 100px 4px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid rgba(232,160,32,.05);
+      align-items: start;
+      transition: border-color .3s;
+    }
+    .event-item:hover { border-bottom-color: var(--jp-amber); }
+    .event-item:first-child { border-top: 1px solid rgba(232,160,32,.05); }
+
+    .event-date-col {
+      text-align: right;
+    }
+    .event-year {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--jp-amber);
+      opacity: .4;
+      line-height: 1;
+    }
+
+    .event-line-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: .5rem;
+    }
+    .event-dot {
+      width: 8px;
+      height: 8px;
+      border: 1px solid var(--jp-amber);
+      border-radius: 50%;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .event-connector {
+      width: 1px;
+      flex: 1;
+      min-height: 60px;
+      background: linear-gradient(to bottom, rgba(232,160,32,.3), transparent);
+      margin-top: .3rem;
+    }
+
+    .event-content {}
+    .event-type {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: 3px;
+      color: var(--jp-amber);
+      opacity: .6;
+      margin-bottom: .5rem;
+    }
+    .event-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--jp-text-bright);
+      margin-bottom: .5rem;
+      text-transform: uppercase;
+    }
+    .event-desc {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .9rem;
+      opacity: .4;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .events-cta {
+      margin-top: 5rem;
+    }
+    .cta-inner {
+      padding: 4rem 0;
+      text-align: center;
+      background: var(--jp-dark-panel);
+    }
+    .cta-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--jp-text-bright);
+      text-transform: uppercase;
+      margin: 1.5rem 0 1rem;
+    }
+    .cta-inner > p {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .95rem;
+      opacity: .4;
+      margin-bottom: 2rem;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  CONTACT                                   */
+    /* ═══════════════════════════════════════════ */
+    .contact-section {
+      min-height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10vh 2rem;
+      position: relative;
+      text-align: center;
+    }
+    .contact-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(232,160,32,.06) 0%, transparent 65%);
+    }
+    .contact-inner { position: relative; z-index: 2; max-width: 600px; }
+
+    .contact-question {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 700;
+      color: var(--jp-text-bright);
+      line-height: 1.1;
+      text-transform: uppercase;
+      margin: 1.5rem 0 1rem;
+    }
+    .contact-question span { color: var(--jp-amber); }
+
+    .contact-sub {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .95rem;
+      opacity: .4;
+      max-width: 500px;
+      margin: 0 auto 3rem;
+      line-height: 1.8;
+    }
+
+    .contact-links {
+      display: flex;
+      gap: 1px;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: .8rem;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      padding: 1rem 2rem;
+      border: 1px solid rgba(232,160,32,.15);
+      background: var(--jp-dark-mid);
+      color: var(--jp-text);
+      text-decoration: none;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      transition: all .3s;
+    }
+    .contact-link:hover {
+      border-color: var(--jp-amber);
+      color: var(--jp-amber);
+    }
+    .contact-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  FOOTER                                    */
+    /* ═══════════════════════════════════════════ */
+    footer {
+      padding: 4rem 8vw;
+      border-top: 1px solid rgba(232,160,32,.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .footer-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      opacity: .7;
+    }
+    .footer-brand span { color: var(--jp-amber); }
+
+    .footer-social {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .footer-social a {
+      color: var(--jp-text);
+      opacity: .5;
+      transition: opacity .3s;
+    }
+    .footer-social a:hover { opacity: .8; }
+    .footer-social svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .footer-legal {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .7rem;
+      opacity: .45;
+      max-width: 400px;
+      text-align: right;
+      line-height: 1.6;
+      letter-spacing: .5px;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /*  SIDE MARKERS                              */
+    /* ═══════════════════════════════════════════ */
+    .side-marker {
+      position: fixed;
+      z-index: 101;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: 4px;
+      color: var(--jp-text);
+      opacity: .12;
+      writing-mode: vertical-rl;
+      pointer-events: none;
+    }
+    .side-marker.left { left: 1.5rem; top: 50%; transform: translateY(-50%); }
+    .side-marker.right { right: 1.5rem; top: 50%; transform: translateY(-50%) rotate(180deg); }
+
+    /* ═══════════════════════════════════════════ */
+    /*  RESPONSIVE                                */
+    /* ═══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .jp-nav { padding: 1rem 1.5rem; }
+      .nav-status { display: none; }
+      .nav-links { gap: 1rem; }
+    }
+
+    @media (max-width: 768px) {
+      .side-marker { display: none; }
+      .hero-footer { padding: 0 1.5rem; }
+
+      .gallery-mosaic {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 25vh;
+      }
+      .gallery-frame.g1,
+      .gallery-frame.g2,
+      .gallery-frame.g3,
+      .gallery-frame.g4,
+      .gallery-frame.g5,
+      .gallery-frame.g6 { grid-column: auto; grid-row: auto; }
+      .gallery-frame.g1 { grid-column: 1 / -1; grid-row: span 2; }
+
+      .event-item { grid-template-columns: 60px 3px 1fr; gap: 1rem; }
+
+      .spec-row { grid-template-columns: 1fr; gap: .2rem; }
+      .dossier-header { flex-direction: column; gap: .3rem; text-align: center; }
+      .dossier-footer { flex-direction: column; gap: .3rem; text-align: center; }
+
+      footer { flex-direction: column; align-items: center; text-align: center; }
+      .footer-legal { text-align: center; }
+
+      .nav-links { gap: .8rem; }
+      .nav-link:not(.nav-cta) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDE MARKERS -->
+  <div class="side-marker left">WRANGLER TJ &bull; 1997</div>
+  <div class="side-marker right">BELO HORIZONTE &bull; MG &bull; BRASIL</div>
+
+  <!-- DNA MATRIX CANVAS -->
+  <canvas id="dna-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  NAV                                    -->
+  <!-- ═══════════════════════════════════════ -->
+  <nav class="jp-nav" id="jp-nav">
+    <div class="nav-brand">
+      <span class="nav-jp">JP</span><span class="nav-num">01</span>
+    </div>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span class="status-text">UNIT OPERATIONAL</span>
+    </div>
+    <div class="nav-links">
+      <a href="#story" class="nav-link">Legado</a>
+      <a href="#specs" class="nav-link">Dossier</a>
+      <a href="#gallery" class="nav-link">Galeria</a>
+      <a href="#events" class="nav-link">Eventos</a>
+      <a href="#contato" class="nav-link nav-cta">Contato</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  HERO                                   -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <img src="images/hero.webp" alt="JP01 — Jeep Wrangler TJ 1997 Jurassic Park" class="hero-img">
+      <div class="hero-overlay"></div>
+    </div>
+
+    <div class="terminal-boot" id="terminalBoot">
+      <p class="t-line">VELOCIRAPTOR TRACKING SYSTEMS v4.2.1</p>
+      <p class="t-line">INITIALIZING PARK VEHICLE REGISTRY...</p>
+      <p class="t-line">LOCATING UNIT JP-01... <span class="t-amber">FOUND</span></p>
+      <p class="t-line">STATUS: <span class="t-amber">OPERATIONAL</span></p>
+      <p class="t-cursor">_</p>
+    </div>
+
+    <div class="hero-content" id="heroContent">
+      <div class="hero-eyebrow"><span class="jp-warning">! JURASSIC PARK VEHICLE REGISTRY</span></div>
+      <div class="hero-number">JP01</div>
+      <p class="hero-tagline">onde a ficcao encontra a estrada</p>
+      <div class="hero-meta">
+        <span>WRANGLER TJ &middot; 1997</span>
+        <span class="hero-sep">|</span>
+        <span>BELO HORIZONTE &middot; MG</span>
+      </div>
+    </div>
+
+    <div class="hero-footer">
+      <div class="hero-coord">19&deg;55'S 43&deg;56'W</div>
+      <div class="scroll-indicator">
+        <span>scroll</span>
+        <div class="scroll-line"></div>
+      </div>
+      <div class="hero-classify">UNIT #0001 &middot; SECTOR 04</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  STORY / LEGADO                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="danger-stripe"></div>
+  <section class="story-section" id="story">
+    <div class="story-header reveal">
+      <div class="section-eyebrow"><span class="jp-warning">! FILE &mdash; A JORNADA</span></div>
+      <div class="section-number" style="margin-top:1.5rem;">01 &mdash; LEGADO</div>
+      <h2 class="section-title">Do sonho<br>a <span>lenda</span></h2>
+    </div>
+
+    <div class="story-quote reveal">
+      <p class="story-quote-text">
+        &ldquo;Eu sou passageiro nessa vida&hellip;<br>
+        mas as <em>memorias do meu filho</em><br>
+        devem ficar.&rdquo;
+      </p>
+      <p class="story-quote-author">&mdash; Lucas Mendes</p>
+    </div>
+
+    <div class="story-scroll">
+      <div class="story-card">
+        <span class="card-status">INICIO</span>
+        <div class="card-year">2019</div>
+        <h3 class="card-title">O sonho nasce</h3>
+        <p class="card-text">Outubro. Uma decisao que mudaria tudo. Construir uma replica fiel do veiculo mais iconico do cinema &mdash; aqui no Brasil, onde ninguem tinha feito antes.</p>
+      </div>
+      <div class="story-card">
+        <span class="card-status">SONHO</span>
+        <div class="card-year">2020</div>
+        <h3 class="card-title">A base perfeita</h3>
+        <p class="card-text">Setembro. Um Wrangler TJ Sport 1997 encontra seu novo proposito. O chassi que carregaria algo muito maior que um motor.</p>
+      </div>
+      <div class="story-card">
+        <span class="card-status">TRANSFORMACAO</span>
+        <div class="card-year">2021</div>
+        <h3 class="card-title">Nasce o JP01</h3>
+        <p class="card-text">Junho. Sand Beige. Faixas vermelhas. Numero 01. Cada detalhe seguindo referencias precisas do JP Motorpool. Obsessao por autenticidade.</p>
+      </div>
+      <div class="story-card">
+        <span class="card-status">EVOLUCAO</span>
+        <div class="card-year">22-24</div>
+        <h3 class="card-title">A estrada chama</h3>
+        <p class="card-text">Eventos. Exposicoes em shoppings. Encontros. Criancas que nunca viram o filme, mas param paralisadas. Adultos que voltam a ter 10 anos. Magia real.</p>
+      </div>
+      <div class="story-card">
+        <span class="card-status">NOVA FASE</span>
+        <div class="card-year">2025</div>
+        <h3 class="card-title">Nova fase</h3>
+        <p class="card-text">Revisao mecanica completa. O JP01 se prepara para os proximos capitulos. A historia esta longe de acabar.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  SPECS / DOSSIER                        -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="danger-stripe"></div>
+  <section class="specs-section" id="specs">
+    <div class="reveal">
+      <div class="section-eyebrow"><span class="jp-warning">! VEHICLE FILE &mdash; FICHA TECNICA</span></div>
+      <div class="section-number" style="margin-top:1.5rem;">02 &mdash; DOSSIER</div>
+      <h2 class="section-title">Anatomia<br>do <span>JP01</span></h2>
+    </div>
+
+    <div class="dossier-file reveal">
+      <div class="dossier-header">
+        <span>JURASSIC PARK VEHICLE FILE &middot; REF: JP-01-TJ97</span>
+        <span>CONFIDENTIAL</span>
+      </div>
+      <div class="dossier-body">
+        <div class="spec-row"><span class="spec-field">VEHICLE BASE</span><span class="spec-value">Jeep Wrangler TJ Sport</span></div>
+        <div class="spec-row"><span class="spec-field">MODEL YEAR</span><span class="spec-value">1997</span></div>
+        <div class="spec-row"><span class="spec-field">LIVERY</span><span class="spec-value">Sand Beige &middot; Red Stripes &middot; Number 01</span></div>
+        <div class="spec-row"><span class="spec-field">SOFT TOP</span><span class="spec-value">Lona Spice</span></div>
+        <div class="spec-row"><span class="spec-field">WHEELS</span><span class="spec-value">5-spoke Red &middot; BFGoodrich T/A White Letters</span></div>
+        <div class="spec-row"><span class="spec-field">DOORS</span><span class="spec-value">Half Door Configuration</span></div>
+        <div class="spec-row"><span class="spec-field">EQUIPMENT</span><span class="spec-value">Front Winch &middot; Auxiliary Lights</span></div>
+        <div class="spec-row"><span class="spec-field">REFERENCE</span><span class="spec-value">JP Motorpool &middot; Unit #01</span></div>
+        <div class="spec-row"><span class="spec-field">ORIGIN</span><span class="spec-value">Belo Horizonte, MG, Brasil</span></div>
+      </div>
+      <div class="dossier-footer">
+        <span class="t-amber">STATUS: OPERATIONAL</span>
+        <span>CLEARED FOR PARK DEPLOYMENT</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  GALLERY                                -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="gallery-section" id="gallery">
+    <div class="gallery-header reveal">
+      <div class="section-eyebrow"><span class="jp-warning">! REGISTRO VISUAL</span></div>
+      <div class="section-number" style="margin-top:1.5rem;">03 &mdash; GALERIA</div>
+      <h2 class="section-title">Fragmentos<br>de uma <span>lenda</span></h2>
+    </div>
+    <div class="gallery-mosaic">
+      <div class="gallery-frame g1">
+        <img src="images/hero.webp" alt="JP01 estrada">
+        <div class="frame-overlay"><span class="frame-badge">JP &middot; 01</span></div>
+      </div>
+      <div class="gallery-frame g2">
+        <div class="frame-placeholder">
+          <span class="frame-jp-label">JP01</span>
+          <span class="frame-sub">EXPOSICAO</span>
+        </div>
+        <div class="frame-overlay"><span class="frame-badge">PARK UNIT</span></div>
+      </div>
+      <div class="gallery-frame g3">
+        <div class="frame-placeholder">
+          <span class="frame-jp-label">01</span>
+          <span class="frame-sub">WHEELS</span>
+        </div>
+        <div class="frame-overlay"><span class="frame-badge">DETAIL</span></div>
+      </div>
+      <div class="gallery-frame g4">
+        <img src="images/514601340_18045663458545261_8918705330932455918_n.webp" alt="Matheus e Nayra com o JP01 no shopping">
+        <div class="frame-overlay"><span class="frame-badge">LEGACY &middot; 2024</span></div>
+      </div>
+      <div class="gallery-frame g5">
+        <div class="frame-placeholder">
+          <span class="frame-jp-label">JP</span>
+          <span class="frame-sub">CRIANCAS</span>
+        </div>
+        <div class="frame-overlay"><span class="frame-badge">MAGIC MOMENT</span></div>
+      </div>
+      <div class="gallery-frame g6">
+        <div class="frame-placeholder">
+          <span class="frame-jp-label">TJ97</span>
+          <span class="frame-sub">FRONTAL</span>
+        </div>
+        <div class="frame-overlay"><span class="frame-badge">WINCH &middot; LIGHTS</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  EVENTS                                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="danger-stripe"></div>
+  <section class="events-section" id="events">
+    <div class="reveal">
+      <div class="section-eyebrow"><span class="jp-warning">! LOG DE APARICOES</span></div>
+      <div class="section-number" style="margin-top:1.5rem;">04 &mdash; EVENTOS</div>
+      <h2 class="section-title">Onde o JP01<br>ja <span>esteve</span></h2>
+    </div>
+
+    <div class="events-list">
+      <div class="event-item reveal">
+        <div class="event-date-col">
+          <div class="event-year">2024</div>
+        </div>
+        <div class="event-line-col">
+          <div class="event-dot"></div>
+          <div class="event-connector"></div>
+        </div>
+        <div class="event-content">
+          <div class="event-type">EXPOSICAO</div>
+          <div class="event-title">Exposicao em Shopping</div>
+          <div class="event-desc">JP01 exposto com cordas de isolamento. Filas de familias. Criancas que paravam e nao queriam ir embora. A magia do parque a quilometros de distancia.</div>
+        </div>
+      </div>
+
+      <div class="event-item reveal">
+        <div class="event-date-col">
+          <div class="event-year">2023</div>
+        </div>
+        <div class="event-line-col">
+          <div class="event-dot"></div>
+          <div class="event-connector"></div>
+        </div>
+        <div class="event-content">
+          <div class="event-type">ENCONTRO</div>
+          <div class="event-title">Encontro de Jeeps</div>
+          <div class="event-desc">Entre dezenas de jipes, um se destacava. A replica cinematografica que roubou a cena. Nao e um Jeep qualquer.</div>
+        </div>
+      </div>
+
+      <div class="event-item reveal">
+        <div class="event-date-col">
+          <div class="event-year">2022</div>
+        </div>
+        <div class="event-line-col">
+          <div class="event-dot"></div>
+          <div class="event-connector"></div>
+        </div>
+        <div class="event-content">
+          <div class="event-type">EVENTO INFANTIL</div>
+          <div class="event-title">Evento tematico infantil</div>
+          <div class="event-desc">A magia vai alem da tela. Criancas que nunca viram o filme, mas reconhecem a aventura quando a veem. Esse e o poder do JP01.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="events-cta reveal">
+      <div class="danger-stripe"></div>
+      <div class="cta-inner">
+        <span class="jp-warning">! SLOT DISPONIVEL</span>
+        <h3 class="cta-title">Quer o JP01 no seu <span class="t-amber">evento</span>?</h3>
+        <p>Exposicoes, eventos infantis, encontros e experiencias unicas.</p>
+        <a href="https://wa.me/5531999999999" class="btn-jp" target="_blank">Falar pelo WhatsApp</a>
+      </div>
+      <div class="danger-stripe"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  CONTACT                                -->
+  <!-- ═══════════════════════════════════════ -->
+  <section class="contact-section" id="contato">
+    <div class="contact-inner reveal">
+      <span class="jp-warning">! CONTATO</span>
+      <h2 class="contact-question">Quer o JP01<br>no seu <span>evento</span>?</h2>
+      <p class="contact-sub">
+        Exposicoes, encontros, datas especiais.<br>
+        Se merece um toque de aventura, fala comigo.
+      </p>
+      <div class="contact-links">
+        <a href="https://wa.me/5531999999999" class="contact-link" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>
+        <a href="https://instagram.com/jurassicparkjp01" class="contact-link" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram
+        </a>
+        <a href="mailto:seuemail@email.com" class="contact-link" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          E-mail
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  FOOTER                                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <footer>
+    <div class="footer-brand">JP<span>01</span></div>
+    <div class="footer-social">
+      <a href="https://instagram.com/jurassicparkjp01" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg>
+      </a>
+    </div>
+    <div class="footer-legal">
+      Projeto pessoal de fa. Sem afiliacao, endosso ou autorizacao da Universal Pictures,
+      Amblin Entertainment ou detentoras dos direitos das franquias Jurassic Park / Jurassic World.
+      Marcas registradas pertencem aos respectivos proprietarios.
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  SCRIPTS                                -->
+  <!-- ═══════════════════════════════════════ -->
+  <script>
+    // ═══════════════════════════════════════
+    //  DNA MATRIX BACKGROUND — ACGT + FLASHLIGHT
+    // ═══════════════════════════════════════
+    const canvas = document.getElementById('dna-canvas');
+    const ctx = canvas.getContext('2d');
+    const L = 'ACGT';
+    const fontSize = 11;
+    const charWidth = 7.5;
+    const lineHeight = 13;
+    let lines = [];
+    let mouseX = -1000, mouseY = -1000;
+    let smX = -1000, smY = -1000;
+    const radius = 200;
+
+    function buildLines() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const cols = Math.ceil(canvas.width / charWidth) + 2;
+      const rows = Math.ceil(canvas.height / lineHeight) + 2;
+      lines = [];
+      for (let r = 0; r < rows; r++) {
+        let row = '';
+        for (let c = 0; c < cols; c++) {
+          row += L[Math.floor(Math.random() * 4)];
+        }
+        lines.push(row);
+      }
+    }
+
+    buildLines();
+    window.addEventListener('resize', buildLines);
+
+    // Desktop: mouse
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
+
+    // Mobile: touch moves the flashlight
+    let touching = false;
+    document.addEventListener('touchstart', e => {
+      touching = true;
+      const t = e.touches[0];
+      mouseX = t.clientX;
+      mouseY = t.clientY;
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      mouseX = t.clientX;
+      mouseY = t.clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      touching = false;
+    });
+
+    // Mobile: gyroscope
+    let gyroX = 0, gyroY = 0;
+    let hasGyro = false;
+
+    function handleOrientation(e) {
+      if (touching) return;
+      hasGyro = true;
+      const beta = e.beta || 0;
+      const gamma = e.gamma || 0;
+      const normX = Math.max(-1, Math.min(1, gamma / 30));
+      const normY = Math.max(-1, Math.min(1, (beta - 35) / 25));
+      mouseX = (0.5 + normX * 0.4) * canvas.width;
+      mouseY = (0.5 + normY * 0.4) * canvas.height;
+    }
+
+    function initGyro() {
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(state => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, true);
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+    }
+
+    if ('ontouchstart' in window) {
+      initGyro();
+      document.addEventListener('touchstart', function gyroInit() {
+        initGyro();
+        document.removeEventListener('touchstart', gyroInit);
+      }, { once: true });
+    }
+
+    // Sections where DNA should NOT appear
+    const galleryEl = document.querySelector('.gallery-section');
+
+    function getExclusionZones() {
+      const zones = [];
+      if (galleryEl) {
+        const r = galleryEl.getBoundingClientRect();
+        zones.push({ top: r.top, bottom: r.bottom });
+      }
+      return zones;
+    }
+
+    function isExcluded(screenY, zones) {
+      for (let i = 0; i < zones.length; i++) {
+        if (screenY >= zones[i].top && screenY <= zones[i].bottom) return true;
+      }
+      return false;
+    }
+
+    function draw() {
+      smX += (mouseX - smX) * 0.15;
+      smY += (mouseY - smY) * 0.15;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px "Courier New", Courier, monospace`;
+      ctx.textBaseline = 'top';
+
+      const zones = getExclusionZones();
+
+      for (let r = 0; r < lines.length; r++) {
+        const y = r * lineHeight;
+
+        if (isExcluded(y + lineHeight / 2, zones)) continue;
+
+        const rowDist = Math.abs(y + lineHeight / 2 - smY);
+        if (rowDist > radius + lineHeight) {
+          // Ambient — amber tint
+          ctx.fillStyle = 'rgba(232, 160, 32, 0.06)';
+          ctx.fillText(lines[r], 0, y);
+          continue;
+        }
+
+        const row = lines[r];
+        for (let c = 0; c < row.length; c++) {
+          const x = c * charWidth;
+          const dx = x + charWidth / 2 - smX;
+          const dy = y + lineHeight / 2 - smY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < radius) {
+            const t = 1 - dist / radius;
+            const eased = t * t;
+            const alpha = 0.06 + eased * 0.5;
+            ctx.fillStyle = `rgba(232, 160, 32, ${alpha})`;
+          } else {
+            ctx.fillStyle = 'rgba(232, 160, 32, 0.06)';
+          }
+
+          ctx.fillText(row[c], x, y);
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    // Subtle mutations
+    setInterval(() => {
+      for (let i = 0; i < 10; i++) {
+        const r = Math.floor(Math.random() * lines.length);
+        if (!lines[r]) continue;
+        const c = Math.floor(Math.random() * lines[r].length);
+        lines[r] = lines[r].substring(0, c) + L[Math.floor(Math.random() * 4)] + lines[r].substring(c + 1);
+      }
+    }, 400);
+
+    // ═══════════════════════════════════════
+    //  SCROLL REVEAL
+    // ═══════════════════════════════════════
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach(el => observer.observe(el));
+
+    // ═══════════════════════════════════════
+    //  TERMINAL BOOT SEQUENCE
+    // ═══════════════════════════════════════
+    function runTerminalBoot() {
+      const lines = document.querySelectorAll('#terminalBoot .t-line');
+      const heroContent = document.getElementById('heroContent');
+      const terminal = document.getElementById('terminalBoot');
+      let delay = 0;
+      lines.forEach(line => {
+        setTimeout(() => line.classList.add('visible'), delay);
+        delay += 1200;
+      });
+      setTimeout(() => {
+        terminal.classList.add('fade-out');
+        setTimeout(() => {
+          terminal.style.display = 'none';
+          heroContent.classList.add('visible');
+        }, 500);
+      }, delay + 400);
+    }
+    document.addEventListener('DOMContentLoaded', runTerminalBoot);
+
+    // ═══════════════════════════════════════
+    //  NAV SCROLL
+    // ═══════════════════════════════════════
+    window.addEventListener('scroll', () => {
+      document.getElementById('jp-nav').classList.toggle('scrolled', window.scrollY > 80);
+    });
+
+    // ═══════════════════════════════════════
+    //  GLITCH PERIODICO NO HERO-NUMBER
+    // ═══════════════════════════════════════
+    function scheduleGlitch() {
+      const el = document.querySelector('.hero-number');
+      if (el) {
+        el.classList.add('glitch-active');
+        setTimeout(() => el.classList.remove('glitch-active'), 300);
+      }
+      setTimeout(scheduleGlitch, 6000 + Math.random() * 3000);
+    }
+    document.addEventListener('DOMContentLoaded', () => setTimeout(scheduleGlitch, 3000));
+  </script>
+
+</body>
+</html>
