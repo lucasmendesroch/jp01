@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://jp01.com.br/sitemap.xml
