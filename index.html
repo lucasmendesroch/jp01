@@ -1638,8 +1638,8 @@
           pointers[i] = i % decks[i].length;
           img.src = decks[i][pointers[i]];
 
-          // Stagger start time per frame (3-7s base + offset)
-          const interval = 4000 + i * 700;
+          // Stagger start time per frame (10-17.5s base + offset)
+          const interval = 10000 + i * 1500;
           setTimeout(function cycle() {
             if (frame.matches(':hover')) { setTimeout(cycle, interval); return; }
             img.classList.add('fading');
