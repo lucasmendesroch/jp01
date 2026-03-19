@@ -258,7 +258,7 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(to bottom, rgba(8,8,8,.3) 0%, transparent 30%, transparent 60%, rgba(8,8,8,.85) 100%),
+        linear-gradient(to bottom, rgba(8,8,8,.5) 0%, rgba(8,8,8,.45) 30%, rgba(8,8,8,.55) 60%, rgba(8,8,8,.88) 100%),
         radial-gradient(ellipse 80% 60% at 50% 40%, rgba(204,34,0,.05) 0%, transparent 100%);
     }
 
@@ -365,11 +365,11 @@
       font-weight: 200;
       font-size: clamp(1rem, 2.5vw, 1.5rem);
       color: var(--jp-text);
-      opacity: .7;
+      opacity: .9;
       margin-top: 1rem;
       letter-spacing: 4px;
       text-transform: uppercase;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+      text-shadow: 0 1px 8px rgba(0,0,0,1), 0 2px 30px rgba(0,0,0,1);
     }
 
     .hero-meta {
@@ -382,6 +382,7 @@
       align-items: center;
       justify-content: center;
       gap: 1rem;
+      text-shadow: 0 1px 6px rgba(0,0,0,1);
     }
     .hero-sep { color: var(--jp-amber); opacity: .4; }
 
