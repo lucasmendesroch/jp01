@@ -1578,42 +1578,42 @@
     // ═══════════════════════════════════════
     (function() {
       const images = [
-        'images/hero.webp',
-        'images/20201010_150806.jpg',
-        'images/20201012_150716.jpg',
-        'images/20201014_105511.jpg',
-        'images/20210116_085759.jpg',
-        'images/20210116_141555.jpg',
-        'images/20210626_130822.jpg',
-        'images/20220514_154515.jpg',
-        'images/20221016_170432.jpg',
-        'images/20221016_170433.jpg',
-        'images/20230401_200049.jpg',
-        'images/20230714_144512.jpg',
-        'images/20230805_075622.jpg',
-        'images/20230805_085515.jpg',
-        'images/20230805_171021.jpg',
-        'images/20230827_151814.jpg',
-        'images/20230828_210739.jpg',
-        'images/20230916_162513.jpg',
-        'images/20231104_180828.jpg',
-        'images/20240309_124033.jpg',
-        'images/20250417_133822.jpg',
-        'images/20250427_132402.jpg',
-        'images/514601340_18045663458545261_8918705330932455918_n.webp',
-        'images/DSC_0034.jpg',
-        'images/DSC_0039.jpg',
-        'images/DSC_0095.jpg',
-        'images/DSC_0289.JPG',
-        'images/IMG-20201009-WA0012.jpg',
-        'images/IMG-20210615-WA0044.jpg',
-        'images/IMG-20210616-WA0013.jpg',
-        'images/IMG_20210509_135841_669.jpg',
-        'images/IMG_20220612_005616_722.jpg',
-        'images/IMG_20220815_162628_385.jpg',
-        'images/IMG_20240401_190946_111.jpg',
-        'images/IMG_20240630_190000_524.jpg',
-        'images/jeep-wrangler-4.0-sport-4x4-teto-lona-6i-12v-gasolina-2p-automatico-wmimagem10415971527.jpg'
+        { src: 'images/hero.webp',                                                                          badge: 'JP · 01' },
+        { src: 'images/20201010_150806.jpg',                                                                badge: 'ORIGIN · 2020' },
+        { src: 'images/20201012_150716.jpg',                                                                badge: 'FAMÍLIA · 2020' },
+        { src: 'images/20201014_105511.jpg',                                                                badge: 'TRILHA · 2020' },
+        { src: 'images/20210116_085759.jpg',                                                                badge: 'CAMPO · 2021' },
+        { src: 'images/20210116_141555.jpg',                                                                badge: 'CAMPO · 2021' },
+        { src: 'images/20210626_130822.jpg',                                                                badge: 'ESTRADA · 2021' },
+        { src: 'images/20220514_154515.jpg',                                                                badge: 'JP01 · 2022' },
+        { src: 'images/20221016_170432.jpg',                                                                badge: 'PARK UNIT' },
+        { src: 'images/20221016_170433.jpg',                                                                badge: 'PARK UNIT' },
+        { src: 'images/20230401_200049.jpg',                                                                badge: 'NOTURNA · 2023' },
+        { src: 'images/20230714_144512.jpg',                                                                badge: 'VERÃO · 2023' },
+        { src: 'images/20230805_075622.jpg',                                                                badge: 'FIELD OPS' },
+        { src: 'images/20230805_085515.jpg',                                                                badge: 'TRILHA · 2023' },
+        { src: 'images/20230805_171021.jpg',                                                                badge: 'SUNSET · 2023' },
+        { src: 'images/20230827_151814.jpg',                                                                badge: 'EVENTO · 2023' },
+        { src: 'images/20230828_210739.jpg',                                                                badge: 'NOTURNA · 2023' },
+        { src: 'images/20230916_162513.jpg',                                                                badge: 'EXPOSIÇÃO' },
+        { src: 'images/20231104_180828.jpg',                                                                badge: 'SUNSET RUN' },
+        { src: 'images/20240309_124033.jpg',                                                                badge: 'MARÇO · 2024' },
+        { src: 'images/20250417_133822.jpg',                                                                badge: 'ABRIL · 2025' },
+        { src: 'images/20250427_132402.jpg',                                                                badge: 'ABRIL · 2025' },
+        { src: 'images/514601340_18045663458545261_8918705330932455918_n.webp',                             badge: 'LEGACY · 2024' },
+        { src: 'images/DSC_0034.jpg',                                                                       badge: 'FRONTAL · NOITE' },
+        { src: 'images/DSC_0039.jpg',                                                                       badge: 'CREW' },
+        { src: 'images/DSC_0095.jpg',                                                                       badge: 'DETAIL' },
+        { src: 'images/DSC_0289.JPG',                                                                       badge: 'FIELD OPS' },
+        { src: 'images/IMG-20201009-WA0012.jpg',                                                            badge: 'ORIGIN · 2020' },
+        { src: 'images/IMG-20210615-WA0044.jpg',                                                            badge: 'AVENTURA · 2021' },
+        { src: 'images/IMG-20210616-WA0013.jpg',                                                            badge: 'AVENTURA · 2021' },
+        { src: 'images/IMG_20210509_135841_669.jpg',                                                        badge: 'MAIO · 2021' },
+        { src: 'images/IMG_20220612_005616_722.jpg',                                                        badge: 'JUNHO · 2022' },
+        { src: 'images/IMG_20220815_162628_385.jpg',                                                        badge: 'AGOSTO · 2022' },
+        { src: 'images/IMG_20240401_190946_111.jpg',                                                        badge: 'ABRIL · 2024' },
+        { src: 'images/IMG_20240630_190000_524.jpg',                                                        badge: 'JUNHO · 2024' },
+        { src: 'images/jeep-wrangler-4.0-sport-4x4-teto-lona-6i-12v-gasolina-2p-automatico-wmimagem10415971527.jpg', badge: 'PRÉ-TRANSFORMAÇÃO' },
       ];
 
       // Shuffle array (Fisher-Yates)
@@ -1640,9 +1640,12 @@
             img.alt = 'JP01';
             frame.prepend(img);
           }
+          const badge = frame.querySelector('.frame-badge');
+
           // Start at a different position per frame
           pointers[i] = i % decks[i].length;
-          img.src = decks[i][pointers[i]];
+          img.src = decks[i][pointers[i]].src;
+          if (badge) badge.textContent = decks[i][pointers[i]].badge;
 
           // Stagger start time per frame (10-17.5s base + offset)
           const interval = 10000 + i * 1500;
@@ -1651,7 +1654,8 @@
             img.classList.add('fading');
             setTimeout(() => {
               pointers[i] = (pointers[i] + 1) % decks[i].length;
-              img.src = decks[i][pointers[i]];
+              img.src = decks[i][pointers[i]].src;
+              if (badge) badge.textContent = decks[i][pointers[i]].badge;
               img.classList.remove('fading');
             }, 1000);
             setTimeout(cycle, interval);
