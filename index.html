@@ -693,8 +693,11 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform .6s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform .6s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease;
       filter: grayscale(.2);
+    }
+    .gallery-frame img.fading {
+      opacity: 0;
     }
     .gallery-frame:hover img {
       transform: scale(1.05);
@@ -1563,6 +1566,93 @@
       setTimeout(scheduleGlitch, 6000 + Math.random() * 3000);
     }
     document.addEventListener('DOMContentLoaded', () => setTimeout(scheduleGlitch, 3000));
+
+    // ═══════════════════════════════════════
+    //  GALLERY SLIDESHOW
+    // ═══════════════════════════════════════
+    (function() {
+      const images = [
+        'images/hero.webp',
+        'images/20201010_150806.jpg',
+        'images/20201012_150716.jpg',
+        'images/20201014_105511.jpg',
+        'images/20210116_085759.jpg',
+        'images/20210116_141555.jpg',
+        'images/20210626_130822.jpg',
+        'images/20220514_154515.jpg',
+        'images/20221016_170432.jpg',
+        'images/20221016_170433.jpg',
+        'images/20230401_200049.jpg',
+        'images/20230714_144512.jpg',
+        'images/20230805_075622.jpg',
+        'images/20230805_085515.jpg',
+        'images/20230805_171021.jpg',
+        'images/20230827_151814.jpg',
+        'images/20230828_210739.jpg',
+        'images/20230916_162513.jpg',
+        'images/20231104_180828.jpg',
+        'images/20240309_124033.jpg',
+        'images/20250417_133822.jpg',
+        'images/20250427_132402.jpg',
+        'images/514601340_18045663458545261_8918705330932455918_n.webp',
+        'images/DSC_0034.jpg',
+        'images/DSC_0039.jpg',
+        'images/DSC_0095.jpg',
+        'images/DSC_0289.JPG',
+        'images/IMG-20201009-WA0012.jpg',
+        'images/IMG-20210615-WA0044.jpg',
+        'images/IMG-20210616-WA0013.jpg',
+        'images/IMG_20210509_135841_669.jpg',
+        'images/IMG_20220612_005616_722.jpg',
+        'images/IMG_20220815_162628_385.jpg',
+        'images/IMG_20240401_190946_111.jpg',
+        'images/IMG_20240630_190000_524.jpg',
+        'images/jeep-wrangler-4.0-sport-4x4-teto-lona-6i-12v-gasolina-2p-automatico-wmimagem10415971527.jpg'
+      ];
+
+      // Shuffle array (Fisher-Yates)
+      function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const frames = document.querySelectorAll('.gallery-frame');
+        // Each frame gets its own shuffled deck and pointer
+        const decks = Array.from(frames).map(() => shuffle(images));
+        const pointers = new Array(frames.length).fill(0);
+
+        frames.forEach((frame, i) => {
+          // Ensure frame has an img
+          let img = frame.querySelector('img');
+          if (!img) {
+            img = document.createElement('img');
+            img.alt = 'JP01';
+            frame.prepend(img);
+          }
+          // Start at a different position per frame
+          pointers[i] = i % decks[i].length;
+          img.src = decks[i][pointers[i]];
+
+          // Stagger start time per frame (3-7s base + offset)
+          const interval = 4000 + i * 700;
+          setTimeout(function cycle() {
+            if (frame.matches(':hover')) { setTimeout(cycle, interval); return; }
+            img.classList.add('fading');
+            setTimeout(() => {
+              pointers[i] = (pointers[i] + 1) % decks[i].length;
+              img.src = decks[i][pointers[i]];
+              img.classList.remove('fading');
+            }, 1000);
+            setTimeout(cycle, interval);
+          }, interval);
+        });
+      });
+    })();
   </script>
 
 </body>
